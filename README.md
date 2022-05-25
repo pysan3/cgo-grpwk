@@ -28,6 +28,8 @@ $ python main.py
 ### Useful Options
 
 ```bash
+$ python main.py --model_load_iter -1 # will load the latest model params found in <model_out>
+
 $ python main.py --flagfile params.txt  # tweak default options
 # options currently in this file are the defaults
 
