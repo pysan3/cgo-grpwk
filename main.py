@@ -186,11 +186,11 @@ def main(argv: List[str]):
     model = ModelLoader(opts, get_model(opts, target_data.shape, device))
     if model.prev_model_path is not None:
         prev_model_iter = opts.model_load_iter if opts.model_load_iter > 0 else model.get_latest_iteration()
-        print(f'Found pre trained model. Start training from iter ? (default: {prev_model_iter})')
+        print(f'Found pre trained model. Start training from what iter? (default: {prev_model_iter})')
         try:
-            prev_model_iter = int(input())
-        except Exception:
-            pass
+            prev_model_iter = int(input('> '))
+        except Exception as e:
+            print(f'Could not parse your input {e=}. Starting from {prev_model_iter}')
     train(opts, model, target_data, target_cameras, start_iter=prev_model_iter)
 
     with torch.no_grad():
@@ -198,7 +198,8 @@ def main(argv: List[str]):
 
     image_grid(rotating_volume_frames.clamp(0., 1.).cpu().numpy(), rows=4, cols=7, rgb=True, fill=True)
     plt.savefig(model.output_dir / 'eval.png')
-    if opts.verbose:
+    print(f'[green]Open {model.output_dir / "eval.png"} for results.[/]')
+    if opts.vis:
         plt.show()
 
 

@@ -1,4 +1,5 @@
 from absl import flags
+import re
 from rich import print
 from typing import Dict, Any
 from pathlib import Path
@@ -40,26 +41,26 @@ class ModelLoader:
         return self.opts.verbose
 
     def get_latest_iteration(self):
-        return int(sorted(self.output_dir.glob('model_[0-9]{4}.pth'))[-1].stem[7:])
+        return int(sorted(f.stem[7:] for f in self.output_dir.iterdir() if re.match('model_[0-9]{4}.pth', f.name))[-1])
 
     def _load_prev_model(self, iteration: int):
         if iteration == 0:
             return None
-        if iteration > -1:
+        if iteration >= -1:
             return self.model_path(iteration, check_exists=True)
 
     def save_iteration(self, iteration: int, write_data: Dict[str, Any]):
+        # Write to SummaryWriter
+        if self.verbose and iteration % 10 == 0:
+            print(f'{iteration=} ===================', write_data)
+        for k, v in write_data.items():
+            self.writer.add_scalar(k, v, iteration)
         if iteration % self.opts.model_save_every == 0:
             if self.verbose:
                 print(f'Saving current state to {self.model_path(iteration, False)}')
             torch.save(self.model.state_dict(), str(self.model_path(iteration, check_exists=False)))
         # Update `model_latest.pth`
         torch.save(self.model.state_dict(), str(self.model_path(-1, check_exists=False)))
-        # Write to SummaryWriter
-        if self.verbose and iteration % 10 == 0:
-            print(f'{iteration=} ===================', write_data)
-        for k, v in write_data.items():
-            self.writer.add_scalar(k, v, iteration)
 
     def update_optim_lr(self, lr: float):
         prev_lr = self.optimizer.state_dict()['param_groups'][0]['lr']
