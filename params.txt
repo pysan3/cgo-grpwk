@@ -1,0 +1,19 @@
+--project_name=cgo-grpwk
+
+# runtime config opts
+--verbose
+--novis
+
+--model_out=./out
+--model_save_every=10
+--model_load_iter=0
+
+# model param opts
+--vol_size=128
+--vol_extent_world=3.0
+
+# training opts
+--optim=Adam
+--lr=0.1
+--batch_size=10
+--num_iters=300
