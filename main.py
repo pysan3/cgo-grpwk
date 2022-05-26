@@ -1,22 +1,18 @@
 import matplotlib.pyplot as plt
-from torchtyping import TensorType
-from dataclasses import dataclass
-from typing import List
 from rich import print
 from rich.progress import track
 from rich.traceback import install
+from absl import app, flags
 import torch
 from pytorch3d.transforms import so3_exp_map
 from pytorch3d.renderer import FoVPerspectiveCameras
 
-from tutorials.utils.generate_cow_renders import generate_cow_renders
 from tutorials.utils.plot_image_grid import image_grid
 from utils.eval_func import huber
 from utils.setup_env import print_torch, check_cuda
 from utils.model_utils import ModelLoader
+from utils.data_loader import ImageDatas, tutorial_generate_cow_renders
 from model_define import get_model
-
-from absl import app, flags
 
 install()  # Fancier traceback from rich library
 opts = flags.FLAGS  # parse command line args with Abseil-py
@@ -50,22 +46,8 @@ if not check_cuda():
 device: torch.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-@dataclass
-class ImageDatas:
-    # cameras: FoVPerspectiveCameras
-    images: TensorType
-    silhouettes: TensorType
-
-    @property
-    def shape(self) -> int:
-        return self.images.shape[1]
-
-    def __len__(self):
-        return len(self.images)
-
-
 def train(
-    opts: flags.FLAGS,
+    opts: flags.FlagValues,
     model: ModelLoader,
     target_data: ImageDatas,
     target_cameras: FoVPerspectiveCameras,
@@ -89,16 +71,14 @@ def train(
         batch_cameras = FoVPerspectiveCameras(
             R=target_cameras.R[batch_idx],
             T=target_cameras.T[batch_idx],
-            znear=target_cameras.znear[batch_idx],
-            zfar=target_cameras.zfar[batch_idx],
-            aspect_ratio=target_cameras.aspect_ratio[batch_idx],
-            fov=target_cameras.fov[batch_idx],
+            znear=target_cameras.znear[batch_idx],  # type: ignore
+            zfar=target_cameras.zfar[batch_idx],  # type: ignore
+            aspect_ratio=target_cameras.aspect_ratio[batch_idx],  # type: ignore
+            fov=target_cameras.fov[batch_idx],  # type: ignore
             device=device,
         )
 
         # Evaluate the volumetric model.
-        # rendered_images: TensorType
-        # rendered_silhouettes: TensorType
         rendered_data = ImageDatas(*model(batch_cameras).split([3, 1], dim=-1))
 
         # Compute the silhouette error as the mean huber
@@ -113,7 +93,7 @@ def train(
 
         # The optimization loss is a simple
         # sum of the color and silhouette errors.
-        loss: TensorType = color_err + sil_err
+        loss: torch.Tensor = color_err + sil_err
         loss_hist.append(loss.item())
         model.save_iteration(iteration, {
             'color_err': color_err.item(),
@@ -165,20 +145,18 @@ def generate_rotating_volume(volume_model: ModelLoader, target_cameras: FoVPersp
         camera = FoVPerspectiveCameras(
             R=R[None],
             T=T[None],
-            znear=target_cameras.znear[0],
-            zfar=target_cameras.zfar[0],
-            aspect_ratio=target_cameras.aspect_ratio[0],
-            fov=target_cameras.fov[0],
+            znear=target_cameras.znear[0],  # type: ignore
+            zfar=target_cameras.zfar[0],  # type: ignore
+            aspect_ratio=target_cameras.aspect_ratio[0],  # type: ignore
+            fov=target_cameras.fov[0],  # type: ignore
             device=device,
         )
         frames.append(volume_model(camera)[..., :3].clamp(0.0, 1.0))
     return torch.cat(frames)
 
 
-def main(argv: List[str]):
-    target_cameras: FoVPerspectiveCameras
-    target_cameras, *_data = (v.to(device) for v in generate_cow_renders(num_views=40))
-    target_data = ImageDatas(*_data)
+def main(_):
+    target_cameras, target_data = tutorial_generate_cow_renders(num_views=40, device=device)
     if opts.verbose:
         print(f'Generated {len(target_data)} images/silhouettes/cameras.')
 

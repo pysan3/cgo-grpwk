@@ -1,7 +1,7 @@
-from torchtyping import TensorType
+import torch
 
 
-def huber(x: TensorType, y: TensorType, scaling: float = 0.1) -> TensorType:
+def huber(x: torch.Tensor, y: torch.Tensor, scaling: float = 0.1) -> torch.Tensor:
     """
     A helper function for evaluating the smooth L1 (huber) loss between the rendered silhouettes and colors.
     """
