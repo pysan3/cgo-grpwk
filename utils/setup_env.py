@@ -4,7 +4,7 @@ from rich import print
 
 def print_torch():
     print(f'Pytorch version: {torch.__version__}')
-    print(f'CUDA available: {torch.cuda.is_available()}, CUDA version: {torch.version.cuda}')
+    print(f'CUDA available: {torch.cuda.is_available()}, CUDA version: {torch.version.cuda}')  # type: ignore
 
 
 def check_cuda():

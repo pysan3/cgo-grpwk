@@ -8,7 +8,7 @@ from torch.utils.tensorboard.writer import SummaryWriter
 
 
 class ModelLoader:
-    def __init__(self, opts: flags.FLAGS, model: torch.nn.Module):
+    def __init__(self, opts: flags.FlagValues, model: torch.nn.Module):
         self.opts = opts
         self.output_dir = Path(opts.model_out)
         self.output_dir.mkdir(parents=True, exist_ok=True)
