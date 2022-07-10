@@ -28,11 +28,8 @@ flags.DEFINE_integer('model_load_iter', 0, 'Load model at this iteration. (-1) m
 
 # model param opts
 flags.DEFINE_integer('vol_size', 128, 'Size of volume to express the space')
-flags.DEFINE_float(
-    'vol_extent_world',
-    3.0,
-    'Our rendered scene is centered around (0,0,0) and is enclosed inside a bounding box'
-)
+flags.DEFINE_float('vol_extent_world', 3.0,
+                   'Our rendered scene is centered around (0,0,0) and is enclosed inside a bounding box')
 
 # training opts
 flags.DEFINE_string('optim', 'Adam', 'Name of optimizer. Will load as `getattr(torch.optim, opts.optim)`')
