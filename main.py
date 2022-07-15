@@ -1,3 +1,6 @@
+
+# %%
+import os
 import matplotlib.pyplot as plt
 from rich import print
 from rich.progress import track
@@ -11,7 +14,7 @@ from tutorials.utils.plot_image_grid import image_grid
 from utils.eval_func import huber
 from utils.setup_env import print_torch, check_cuda
 from utils.model_utils import ModelLoader
-from utils.data_loader import ImageDatas, tutorial_generate_cow_renders
+from utils.data_loader import ImageDatas, tutorial_generate_cow_renders, generate_data_from_files
 from model_define import get_model
 
 install()  # Fancier traceback from rich library
@@ -28,8 +31,11 @@ flags.DEFINE_integer('model_load_iter', 0, 'Load model at this iteration. (-1) m
 
 # model param opts
 flags.DEFINE_integer('vol_size', 128, 'Size of volume to express the space')
-flags.DEFINE_float('vol_extent_world', 3.0,
-                   'Our rendered scene is centered around (0,0,0) and is enclosed inside a bounding box')
+flags.DEFINE_float(
+    'vol_extent_world',
+    3.0,
+    'Our rendered scene is centered around (0,0,0) and is enclosed inside a bounding box'
+)
 
 # training opts
 flags.DEFINE_string('optim', 'Adam', 'Name of optimizer. Will load as `getattr(torch.optim, opts.optim)`')
@@ -81,7 +87,8 @@ def train(
         # Compute the silhouette error as the mean huber
         # loss between the predicted masks and the
         # target silhouettes.
-        sil_err = huber(rendered_data.silhouettes[..., 0], target_data.silhouettes[batch_idx]).abs().mean()
+        # シルエットは使わない
+        # sil_err = huber(rendered_data.silhouettes[..., 0], target_data.silhouettes[batch_idx]).abs().mean()
 
         # Compute the color error as the mean huber
         # loss between the rendered colors and the
@@ -90,11 +97,11 @@ def train(
 
         # The optimization loss is a simple
         # sum of the color and silhouette errors.
-        loss: torch.Tensor = color_err + sil_err
+        loss: torch.Tensor = color_err # + sil_err
         loss_hist.append(loss.item())
         model.save_iteration(iteration, {
             'color_err': color_err.item(),
-            'sil_err': sil_err.item(),
+            # 'sil_err': sil_err.item(),
             'loss (color + sil)': loss.item(),
         })
 
@@ -153,7 +160,9 @@ def generate_rotating_volume(volume_model: ModelLoader, target_cameras: FoVPersp
 
 
 def main(_):
-    target_cameras, target_data = tutorial_generate_cow_renders(num_views=40, device=device)
+    image_dir = 'tutorials/out/'
+    num_of_images = sum(os.path.isfile(os.path.join(image_dir, name)) for name in os.listdir(image_dir))
+    target_cameras, target_data = generate_data_from_files(num_of_images=num_of_images, root_dir=image_dir, device=device) #tutorial_generate_cow_renders(num_views=40, device=device)
     if opts.verbose:
         print(f'Generated {len(target_data)} images/silhouettes/cameras.')
 
@@ -180,3 +189,5 @@ def main(_):
 
 if __name__ == "__main__":
     app.run(main)
+
+# %%
