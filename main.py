@@ -1,5 +1,3 @@
-
-# %%
 import os
 import matplotlib.pyplot as plt
 from rich import print
@@ -21,6 +19,8 @@ install()  # Fancier traceback from rich library
 opts = flags.FLAGS  # parse command line args with Abseil-py
 
 flags.DEFINE_string('project_name', 'cgo-grpwk', 'Name of this project. Do not change this from default value.')
+
+flags.DEFINE_string('data_dir', './tutorials/out/', 'Directory containing the data.')
 # runtime config opts
 flags.DEFINE_bool('verbose', True, 'Print more detailed informations during training.')
 flags.DEFINE_bool('vis', False, 'Toggle to visualize the rendered result during training')
@@ -82,7 +82,8 @@ def train(
         )
 
         # Evaluate the volumetric model.
-        rendered_data = ImageDatas(*model(batch_cameras).split([3, 1], dim=-1))
+        rgb, _ = model(batch_cameras).split([3, 1], dim=-1)
+        rendered_data = ImageDatas(rgb)
 
         # Compute the silhouette error as the mean huber
         # loss between the predicted masks and the
@@ -120,8 +121,8 @@ def train(
                 return x.clamp(0.0, 1.0).cpu().detach().numpy()
             ax[0].imshow(clamp_and_detach(rendered_data.images[im_show_idx]))
             ax[1].imshow(clamp_and_detach(target_data.images[batch_idx[im_show_idx], ..., :3]))
-            ax[2].imshow(clamp_and_detach(rendered_data.silhouettes[im_show_idx, ..., 0]))
-            ax[3].imshow(clamp_and_detach(target_data.silhouettes[batch_idx[im_show_idx]]))
+            # ax[2].imshow(clamp_and_detach(rendered_data.silhouettes[im_show_idx, ..., 0]))
+            # ax[3].imshow(clamp_and_detach(target_data.silhouettes[batch_idx[im_show_idx]]))
             axis_names = ("rendered image", "target image", "rendered silhouette", "target silhouette")
             for ax_, title_ in zip(ax, axis_names):
                 ax_.grid("off")
@@ -160,7 +161,7 @@ def generate_rotating_volume(volume_model: ModelLoader, target_cameras: FoVPersp
 
 
 def main(_):
-    image_dir = 'tutorials/out/'
+    image_dir = opts.data_dir
     num_of_images = sum(os.path.isfile(os.path.join(image_dir, name)) for name in os.listdir(image_dir))
     target_cameras, target_data = generate_data_from_files(num_of_images=num_of_images, root_dir=image_dir, device=device) #tutorial_generate_cow_renders(num_views=40, device=device)
     if opts.verbose:
@@ -189,5 +190,3 @@ def main(_):
 
 if __name__ == "__main__":
     app.run(main)
-
-# %%

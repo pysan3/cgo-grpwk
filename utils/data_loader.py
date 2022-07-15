@@ -9,7 +9,8 @@ import numpy as np
 @dataclass
 class ImageDatas:
     images: torch.Tensor
-    silhouettes: torch.Tensor
+    # さようならシルエット
+    # silhouettes: torch.Tensor
 
     @property
     def shape(self) -> int:
@@ -48,5 +49,5 @@ def generate_data_from_files(num_of_images: int, root_dir: str, device=None):
     if device is not None:
         tensor = tensor.to(device)
     target_cameras, *_ = generate_cow_renders(num_views=num_of_images)
-    # シルエットは多分使わないので便宜上RGB画像を使う
-    return target_cameras, ImageDatas(tensor, tensor)
+    # シルエットは多分使わないので消した
+    return target_cameras, ImageDatas(tensor)
