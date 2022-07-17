@@ -61,10 +61,10 @@ def generate_head_renders(num_views: int = 40, data_dir: str = DATA_DIR, azimuth
     for f in cow_mesh_files:
         if not os.path.isfile(f):
             print(f"{f} is not found.")
-            
+
     if any(not os.path.isfile(f) for f in cow_mesh_files):
         raise FileNotFoundError(
-            "Head mesh files not found. Please prepare the 3Dmodel and there config files` "
+            "Head mesh files not found. Please prepare the 3D model and their config files` "
         )
 
     # Setup
