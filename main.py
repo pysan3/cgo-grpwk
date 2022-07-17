@@ -12,7 +12,7 @@ from tutorials.utils.plot_image_grid import image_grid
 from utils.eval_func import huber
 from utils.setup_env import print_torch, check_cuda
 from utils.model_utils import ModelLoader
-from utils.data_loader import ImageDatas, tutorial_generate_cow_renders, generate_data_from_files
+from utils.data_loader import ImageDatas, generate_data_from_files
 from model_define import get_model
 
 install()  # Fancier traceback from rich library
@@ -98,12 +98,12 @@ def train(
 
         # The optimization loss is a simple
         # sum of the color and silhouette errors.
-        loss: torch.Tensor = color_err # + sil_err
+        loss: torch.Tensor = color_err  # + sil_err
         loss_hist.append(loss.item())
         model.save_iteration(iteration, {
             'color_err': color_err.item(),
             # 'sil_err': sil_err.item(),
-            'loss (color + sil)': loss.item(),
+            'loss': loss.item(),
         })
 
         # Take the optimization step.
@@ -112,13 +112,13 @@ def train(
         # Visualize the renders every 40 iterations.
         flag_and_idx = {'flag': False, 'idx': 0}
         for i, bi in enumerate(batch_idx):
-            if bi==20:
+            if bi == 20:
                 flag_and_idx['idx'] = i
                 flag_and_idx['flag'] = True
-        if flag_and_idx['flag']: #or iteration == opts.num_iters:
-            
+        if flag_and_idx['flag']:  # or iteration == opts.num_iters:
+
             # Visualize only a single randomly selected element of the batch.
-            im_show_idx = flag_and_idx['idx'] # int(torch.randint(low=0, high=opts.batch_size, size=(1,)))
+            im_show_idx = flag_and_idx['idx']  # int(torch.randint(low=0, high=opts.batch_size, size=(1,)))
             fig, ax = plt.subplots(1, 2, figsize=(10, 5))
             ax = ax.ravel()
 
@@ -168,7 +168,9 @@ def generate_rotating_volume(volume_model: ModelLoader, target_cameras: FoVPersp
 def main(_):
     image_dir = opts.data_dir
     num_of_images = sum(os.path.isfile(os.path.join(image_dir, name)) for name in os.listdir(image_dir))
-    target_cameras, target_data = generate_data_from_files(num_of_images=num_of_images, root_dir=image_dir, device=device) #tutorial_generate_cow_renders(num_views=40, device=device)
+    # tutorial_generate_cow_renders(num_views=40, device=device)
+    target_cameras, target_data = generate_data_from_files(
+        num_of_images=num_of_images, root_dir=image_dir, device=device)
     if opts.verbose:
         print(f'Generated {len(target_data)} images/silhouettes/cameras.')
 

@@ -1,6 +1,3 @@
-from sys import setdlopenflags
-import warnings
-
 import torch
 import torch.nn as nn
 
@@ -26,9 +23,7 @@ class WorldNormalShader(nn.Module):
     ああああああ！！！！
     """
 
-    def __init__(
-        self, device="cpu", cameras=None, lights=None, materials=None, blend_params=None
-    ):
+    def __init__(self, device="cpu", cameras=None, lights=None, materials=None, blend_params=None):
         super().__init__()
         self.lights = lights if lights is not None else PointLights(
             device=device)
@@ -68,9 +63,7 @@ class WorldDepthShader(nn.Module):
     ああああああ！！！！
     """
 
-    def __init__(
-        self, device="cpu", cameras=None, lights=None, materials=None, blend_params=None
-    ):
+    def __init__(self, device="cpu", cameras=None, lights=None, materials=None, blend_params=None):
         super().__init__()
         self.lights = lights if lights is not None else PointLights(
             device=device)
@@ -140,12 +133,12 @@ class OutlineShader(nn.Module):
 
         znear = kwargs.get("znear", getattr(cameras, "znear", 1.0))
         zfar = kwargs.get("zfar", getattr(cameras, "zfar", 100.0))
-        #images = softmax_rgb_blend(colors, fragments, blend_params, znear=znear, zfar=zfar)
+        # images = softmax_rgb_blend(colors, fragments, blend_params, znear=znear, zfar=zfar)
         return colors
 
 
 class SimpleShader(nn.Module):
-    def __init__(self, device="cpu",  cameras=None, blend_params=None):
+    def __init__(self, device="cpu", cameras=None, blend_params=None):
         super().__init__()
         self.cameras = cameras
         self.blend_params = blend_params if blend_params is not None else BlendParams()

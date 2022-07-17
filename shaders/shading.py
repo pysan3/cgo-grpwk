@@ -1,13 +1,9 @@
-from typing import Tuple
-import numpy as np
 import torch
 import torch.nn.functional as F
 from pytorch3d.ops import interpolate_face_attributes
 
 
-def world_normal_shading(
-    meshes, fragments
-) -> torch.Tensor:
+def world_normal_shading(meshes, fragments) -> torch.Tensor:
     """
     write a comments!!
     """
@@ -21,9 +17,7 @@ def world_normal_shading(
     return pixel_normals
 
 
-def prewitt_shading(
-    meshes, fragments, power, offset
-) -> torch.Tensor:
+def prewitt_shading(meshes, fragments, power, offset) -> torch.Tensor:
     """
     """
     faces = meshes.faces_packed()
@@ -69,12 +63,12 @@ def prewitt_shading(
             padding=1
         )
         filtered_pix = torch.sqrt(
-            pixel_h*pixel_h + pixel_v*pixel_v)
+            pixel_h * pixel_h + pixel_v * pixel_v)
         l.append(filtered_pix)
 
     pixel = torch.stack(
         ([f for f in l]), 0
     ).view(1, h, w, pp)
     offset = torch.clamp(torch.tensor(offset), min=0, max=1)
-    pixel = 1/(1+torch.exp(-20*(F.tanh(pixel)-offset)))
+    pixel = 1 / (1 + torch.exp(-20 * (F.tanh(pixel) - offset)))
     return pixel
