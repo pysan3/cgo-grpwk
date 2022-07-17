@@ -115,8 +115,6 @@ def train(
             if bi==20:
                 flag_and_idx['idx'] = i
                 flag_and_idx['flag'] = True
-        if iteration == 1:
-            print(color_err.item())
         if flag_and_idx['flag']: #or iteration == opts.num_iters:
             
             # Visualize only a single randomly selected element of the batch.
