@@ -20,7 +20,7 @@ opts = flags.FLAGS  # parse command line args with Abseil-py
 
 flags.DEFINE_string('project_name', 'cgo-grpwk', 'Name of this project. Do not change this from default value.')
 
-flags.DEFINE_string('data_dir', './tutorials/out/', 'Directory containing the data.')
+flags.DEFINE_string('data_dir', './data/head_images/', 'Directory containing the data.')
 # runtime config opts
 flags.DEFINE_bool('verbose', True, 'Print more detailed informations during training.')
 flags.DEFINE_bool('vis', False, 'Toggle to visualize the rendered result during training')
@@ -109,12 +109,19 @@ def train(
         # Take the optimization step.
         loss.backward()
         model.optimizer.step()
-
         # Visualize the renders every 40 iterations.
-        if iteration % 40 == 0 or iteration == opts.num_iters:
+        flag_and_idx = {'flag': False, 'idx': 0}
+        for i, bi in enumerate(batch_idx):
+            if bi==20:
+                flag_and_idx['idx'] = i
+                flag_and_idx['flag'] = True
+        if iteration == 1:
+            print(color_err.item())
+        if flag_and_idx['flag']: #or iteration == opts.num_iters:
+            
             # Visualize only a single randomly selected element of the batch.
-            im_show_idx = int(torch.randint(low=0, high=opts.batch_size, size=(1,)))
-            fig, ax = plt.subplots(2, 2, figsize=(10, 10))
+            im_show_idx = flag_and_idx['idx'] # int(torch.randint(low=0, high=opts.batch_size, size=(1,)))
+            fig, ax = plt.subplots(1, 2, figsize=(10, 5))
             ax = ax.ravel()
 
             def clamp_and_detach(x):
@@ -123,7 +130,7 @@ def train(
             ax[1].imshow(clamp_and_detach(target_data.images[batch_idx[im_show_idx], ..., :3]))
             # ax[2].imshow(clamp_and_detach(rendered_data.silhouettes[im_show_idx, ..., 0]))
             # ax[3].imshow(clamp_and_detach(target_data.silhouettes[batch_idx[im_show_idx]]))
-            axis_names = ("rendered image", "target image", "rendered silhouette", "target silhouette")
+            axis_names = ("rendered image", "target image")
             for ax_, title_ in zip(ax, axis_names):
                 ax_.grid("off")
                 ax_.axis("off")

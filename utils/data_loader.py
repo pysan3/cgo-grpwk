@@ -2,6 +2,7 @@ import torch
 from dataclasses import dataclass
 
 from tutorials.utils.generate_cow_renders import generate_cow_renders
+from tutorials.utils.generate_head_renders import generate_head_renders
 from io import BytesIO 
 from PIL import Image
 import numpy as np
@@ -27,6 +28,12 @@ def tutorial_generate_cow_renders(num_views: int = 40, device=None):
     target_data = ImageDatas(*_data)
     return target_cameras, target_data
 
+def tutorial_generate_head_renders(num_views: int = 40, device=None):
+    target_cameras, *_data = generate_head_renders(num_views=num_views)
+    if device is not None:
+        _data = (d.to(device) for d in _data)
+    target_data = ImageDatas(*_data)
+    return target_cameras, target_data
 
 def load_images(num_of_images: int, root_dir: str)->list[np.ndarray]:
     images = []
